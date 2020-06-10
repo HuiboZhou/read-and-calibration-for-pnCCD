@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main()
+{
+    ///* input noise and source（如何在大矩阵中input高斯/泊松形子矩阵?） */
+    int d[384*384];
+    int i,j,n,a,b,t,source,noise,sum=0,number=0;
+    float average;
+    int Image[384][384];
+    srand(time(NULL));
+    n=384*384;
+    for (i=0;i<n;i++) d[i]=i;      ///* i=0～384*384 */
+    for (i=n;i>0;i--)         ///* random 0～384*384 */
+    {
+        a=i-1;b=rand() % i;
+        if (a!=b) {t=d[a];d[a]=d[b];d[b]=t;}
+    }
+
+    for (i=0;i<384;i++) {
+        for (j=0;j<384;j++)
+        {
+            source=rand() % 1000+2000;        ///* input random source*/
+            noise=rand() % 100;           ///* input random backgroud*/
+            Image[i][j]=(d[i*384+j]>=130000)?source:noise;      ///* 130000 determine the density of source, pixels~5000(最多数传5000个pixel，5000如何计算的？)*/
+            printf("%d ",Image[i][j]);
+        }
+        printf("\n");
+    }
+
+    ///* set threshold （不同区域、观测模式下阈值如何设置？）*/
+    for ( i = 0; i < 384; i++)
+    {
+	for ( j = 0; j < 384; j++)
+	{
+		sum = sum + Image[i][j];
+		average=50*sum/(384*384);
+	}
+	}
+	printf("%d",sum/(384*384));
+
+	///* find source*/
+
+	float flux[383][383];
+    float x1,y1,x,y,max=0,totall;
+
+    for(i=0;i<383;i++)
+    {
+        for(j=0;j<383;j++)
+            `
+         {
+            flux[i][j]=Image[i][j]+Image[i+1][j]+Image[i][j+1]+Image[i+1][j+1];
+            if(average<flux[i][j])
+               {
+                totall=flux[i][j];
+                x1=i;
+                y1=j;
+                x=x1*(Image[i][j]+Image[i][j+1])/totall+(x1+1)*(Image[i+1][j]+Image[i+1][j+1])/totall;
+                y=y1*(Image[i][j]+Image[i+1][j])/totall+(y1+1)*(Image[i][j+1]+Image[i+1][j+1])/totall;
+                number+=1;
+                printf(" >> flux:%f\n >>x1:%f\n >>y1:%f\n >>x:%f\n >>y:%f\n >> source number:%d\n ",totall,x1,y1,x,y,number);
+               }
+        }
+
+    }
+
+    printf(" >>x:%f\n >>y:%f\n",x,y);
+    return 0;
+}
